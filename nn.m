@@ -39,22 +39,28 @@ while(true)
         delta_out = e.*Y2'.*(ones(1, output_count)-Y2');
         
         phi_prime = Y1.*(ones(1, hidden_count+1,1)-Y1);
-        delta_hidden = phi_prime.*(sum(W2(:,:,i+(epoch-1)*training_size).*delta_out'));
+        delta_hidden = phi_prime.*(sum(W2(:,:,end).*delta_out'));
         
         %Updating Weights
         change1 = alpha * delta_hidden' * currentX;
         change2 = alpha * delta_out' * Y1;
         
         change1 = change1(2:end,:);
-        if(epoch > 2) 
-            change1 = change1 + (beta .* (W1(:,:,i+(epoch-1)*training_size-1) - W1(:,:,i+(epoch-1)*training_size-2)));
-            change2 = change2 + (beta .* (W2(:,:,i+(epoch-1)*training_size-1) - W2(:,:,i+(epoch-1)*training_size-2)));
+        if(i+(epoch-1)*training_size > 1) 
+            change1 = change1 + (beta .* (W1(:,:,end) - W1(:,:,end-1)));
+            change2 = change2 + (beta .* (W2(:,:,end) - W2(:,:,end-1)));
         end
         
-        W1(:,:,i+(epoch-1)*training_size+1) = W1(:,:,i+(epoch-1)*training_size)+change1;
-        W2(:,:,i+(epoch-1)*training_size+1) = W2(:,:,i+(epoch-1)*training_size)+change2;
+        W1(:,:,end+1) = W1(:,:,end)+change1;
+        W2(:,:,end+1) = W2(:,:,end)+change2;
+        
+        %Optional: updating B1 and B2
+        B1 = W1(:,1,end);
+        B2 = W2(:,1,end);
+        
     end;
     ES = E .* E;
+
     if(epoch>1)
         PREV_EES = EES;
         EES = sum(ES(:))/2;
@@ -62,8 +68,9 @@ while(true)
             break;
         end
     else
-        EES = sum(ES(:))/2;
+        EES = sum(ES(:))/2
     end
-    EES
+    %Part A ends in one epocj
+    break;
     epoch= epoch+1;
 end
